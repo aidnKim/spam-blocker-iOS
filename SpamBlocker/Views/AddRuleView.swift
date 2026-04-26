@@ -55,7 +55,13 @@ struct AddRuleView: View {
         )
         Task {
             do {
+                // 1. 서버에 규칙 추가 성공
                 try await APIService.addRule(rule)
+                
+                // 2. iOS 시스템에 "규칙 업데이트" 알려주기
+                APIService.reloadCallDirectory()
+                
+                // 3. UI 닫기 및 새로고침
                 onSave()
                 dismiss()
             } catch {
