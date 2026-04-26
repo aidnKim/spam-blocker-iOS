@@ -85,7 +85,13 @@ struct SpamRuleListView: View {
             let rule = rules[index]
             Task {
                 do {
+                    // 1. 서버에서 규칙 삭제 성공
                     try await APIService.deleteRule(id: rule.id)
+                    
+                    // 2. iOS 시스템에 "규칙 삭제" 알려주기
+                    APIService.reloadCallDirectory()
+                    
+                    // 3. 목록 새로고침
                     await loadRules()
                 } catch {
                     print("삭제 실패: \(error)")

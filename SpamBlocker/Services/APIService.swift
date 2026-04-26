@@ -1,9 +1,11 @@
 import Foundation
+import CallKit
 
 class APIService {
     // 시뮬레이터에서는 localhost를 쓰면 됨
     // 실제 기기 테스트 시에는 Mac의 IP 주소로 변경 (ex: "http://192.168.0.10:8080")
-    static let baseURL = "http://localhost:8080/api"
+//    static let baseURL = "http://localhost:8080/api"
+    static let baseURL = "http://192.168.35.152:8080/api"
     
     // MARK: - 전체 조회
     static func fetchRules() async throws -> [SpamRule] {
@@ -53,6 +55,20 @@ class APIService {
         request.httpMethod = "DELETE"
         
         let (_, _) = try await URLSession.shared.data(for: request)
+    }
+    
+    // MARK: - Call Directory 갱신
+    static func reloadCallDirectory() {
+        // 본인의 Extension Bundle Identifier 입력 (주의: 소문자 등 본인 설정 확인)
+        let extensionIdentifier = "com.aidnkim.SpamBlocker.CallDirectoryExtension"
+        
+        CXCallDirectoryManager.sharedInstance.reloadExtension(withIdentifier: extensionIdentifier) { error in
+            if let error = error {
+                print("Extension 갱신 실패: \(error.localizedDescription)")
+            } else {
+                print("Extension 갱신 성공!")
+            }
+        }
     }
 }
 
