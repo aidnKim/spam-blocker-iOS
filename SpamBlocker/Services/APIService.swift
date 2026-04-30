@@ -5,7 +5,7 @@ class APIService {
     // 시뮬레이터에서는 localhost를 쓰면 됨
     // 실제 기기 테스트 시에는 Mac의 IP 주소로 변경 (ex: "http://192.168.0.10:8080")
 //    static let baseURL = "http://localhost:8080/api"
-    static let baseURL = "http://192.168.35.152:8080/api"
+    static let baseURL = "http://168.107.43.174:8080/api"
     
     // MARK: - 전체 조회
     static func fetchRules() async throws -> [SpamRule] {

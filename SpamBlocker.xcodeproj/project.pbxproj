@@ -47,11 +47,21 @@
 			);
 			target = 1434375D2F9E079D00A53322 /* CallDirectoryExtension */;
 		};
+		14CF713E2FA3D72800EEB40F /* Exceptions for "SpamBlocker" folder in "SpamBlocker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1434372E2F9CFB6B00A53322 /* SpamBlocker */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		143437312F9CFB6B00A53322 /* SpamBlocker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				14CF713E2FA3D72800EEB40F /* Exceptions for "SpamBlocker" folder in "SpamBlocker" target */,
+			);
 			path = SpamBlocker;
 			sourceTree = "<group>";
 		};
@@ -360,6 +370,7 @@
 				DEVELOPMENT_TEAM = C9ABV3AD56;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpamBlocker/Info.plist;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "BE 서버와 통신하기 위해 로컬 네트워크 권한 필요";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -393,6 +404,7 @@
 				DEVELOPMENT_TEAM = C9ABV3AD56;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpamBlocker/Info.plist;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "BE 서버와 통신하기 위해 로컬 네트워크 권한 필요";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

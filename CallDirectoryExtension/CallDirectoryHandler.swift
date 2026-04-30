@@ -61,7 +61,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
     private func fetchRules() async throws -> [ExtensionSpamRule] {
         // 실제 테스트할 때는 Mac의 IP주소를 넣어야 실기기에서 접속 가능합니다! (예: 192.168.0.x)
 //        let url = URL(string: "http://localhost:8080/api/spam-rules")!
-        let url = URL(string: "http://192.168.35.152:8080/api/spam-rules")!
+        let url = URL(string: "http://168.107.43.174:8080/api/spam-rules")!
         let (data, _) = try await URLSession.shared.data(from: url)
         
         let decoder = JSONDecoder()
