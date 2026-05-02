@@ -17,13 +17,9 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
             do {
                 let rules = try await fetchRules()
                 
-                // 2. 전화번호 생성 (PREFIX인 경우 0000~9999 등 확장 필요하지만,
-                // 지금은 심플하게 정확한 번호만 '스팸' 라벨링 처리하는 로직으로 구성합니다)
-                // * PREFIX의 완벽한 처리를 위해서는 차단 번호 대역폭을 모두 생성해야 하나,
-                // 여기서는 EXACT 매칭과 단순 전화번호 포맷 변환에 집중
-                
-                var phoneNumbersToBlock: [CXCallDirectoryPhoneNumber] = []
-                
+                // 2. 전화번호 생성 및 전개 (PREFIX 처리 추가)
+                var phoneNumbersToBlock: [Int64] = []
+
                 for rule in rules {
                     // 번호에서 하이픈 제거 (예: 010-1234-5678 -> 01012345678)
                     var cleanNumber = rule.phoneNumber.replacingOccurrences(of: "-", with: "")
@@ -34,17 +30,31 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
                         cleanNumber = "82" + cleanNumber
                     }
                     
-                    if let intNumber = CXCallDirectoryPhoneNumber(cleanNumber) {
-                        phoneNumbersToBlock.append(intNumber)
+                    // Int64(숫자)로 변환
+                    guard let baseIntNumber = Int64(cleanNumber) else { continue }
+                    
+                    // PREFIX 인 경우 뒤에 4자리(0000~9999)를 붙여서 1만 개 번호 생성
+                    if rule.matchType == "PREFIX" {
+                        let expandedBase = baseIntNumber * 10000 // 예: 82701234 -> 827012340000
+                        for i in 0..<10000 {
+                            phoneNumbersToBlock.append(expandedBase + Int64(i))
+                        }
+                    } else {
+                        // EXACT 인 경우 정확한 번호 그대로 추가
+                        phoneNumbersToBlock.append(baseIntNumber)
                     }
                 }
-                
-                // 3. 반드시 '오름차순'으로 정렬해야 앱이 크래시나지 않음
-                phoneNumbersToBlock.sort()
-                
-                // 4. CallKit에 차단/식별 번호 등록 (여기서는 '스팸 전화'로 식별 라벨 추가)
-                for phoneNumber in phoneNumbersToBlock {
-                    context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: "스팸 전화")
+
+                // 3. 중복 제거 및 반드시 '오름차순'으로 정렬해야 앱이 크래시나지 않음
+                let uniqueSortedNumbers = Array(Set(phoneNumbersToBlock)).sorted()
+
+                // 4. CallKit에 차단/식별 번호 순차적으로 등록
+                for phoneNumber in uniqueSortedNumbers {
+                    // 많은 번호(수만 개 이상)를 등록할 때 메모리가 누적되어 튕기는 것을 방지
+                    autoreleasepool {
+                        // (현재 스팸 전화 식별 라벨 추가) 완전 차단을 원하시면 addBlockingEntry 로 바꾸시면 됩니다.
+                        context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: "스팸 전화")
+                    }
                 }
                 
                 // 5. 완료 알림
@@ -62,6 +72,7 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
         // 실제 테스트할 때는 Mac의 IP주소를 넣어야 실기기에서 접속 가능합니다! (예: 192.168.0.x)
 //        let url = URL(string: "http://localhost:8080/api/spam-rules")!
         let url = URL(string: "http://168.107.43.174:8080/api/spam-rules")!
+
         let (data, _) = try await URLSession.shared.data(from: url)
         
         let decoder = JSONDecoder()
