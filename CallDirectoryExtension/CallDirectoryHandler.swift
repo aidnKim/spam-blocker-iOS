@@ -53,7 +53,9 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
                     // 많은 번호(수만 개 이상)를 등록할 때 메모리가 누적되어 튕기는 것을 방지
                     autoreleasepool {
                         // (현재 스팸 전화 식별 라벨 추가) 완전 차단을 원하시면 addBlockingEntry 로 바꾸시면 됩니다.
-                        context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: "스팸 전화")
+//                        context.addIdentificationEntry(withNextSequentialPhoneNumber: phoneNumber, label: "스팸 전화")
+                        // 스팸전화 차단
+                        context.addBlockingEntry(withNextSequentialPhoneNumber: phoneNumber)
                     }
                 }
                 

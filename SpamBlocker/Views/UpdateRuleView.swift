@@ -12,6 +12,9 @@ struct UpdateRuleView: View {
     @State private var isPrefixBlock: Bool
     @State private var memo: String
     
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
     let existingRule: SpamRule
     var onSave: () -> Void
     
@@ -92,6 +95,16 @@ struct UpdateRuleView: View {
             }
             .navigationTitle("규칙 수정")
             .toolbar { ToolbarItem(placement: .navigationBarLeading) { Button("취소") { dismiss() } } }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    focusedField = .part1
+                }
+            }
+            .alert("알림", isPresented: $showAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(alertMessage)
+            }
         }
     }
     
@@ -107,7 +120,17 @@ struct UpdateRuleView: View {
                 APIService.reloadCallDirectory()
                 onSave()
                 dismiss()
-            } catch { print("수정 실패: \(error)") }
+            } catch let error as APIError {
+                // 우리가 정의한 에러일 경우
+                alertMessage = error.localizedDescription
+                showAlert = true
+            } catch {
+                // 그 외 네트워크 에러 등
+                alertMessage = "요청에 실패했습니다. (\(error.localizedDescription))"
+                showAlert = true
+                print("등록 실패: \(error)")
+            }
         }
+
     }
 }
