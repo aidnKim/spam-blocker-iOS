@@ -3,7 +3,7 @@ import SwiftUI
 struct AddRuleView: View {
     @Environment(\.dismiss) var dismiss
     
-    // ⭐️ 1. 포커스(커서) 관리를 위한 상태 추가
+    // 1. 포커스(커서) 관리를 위한 상태 추가
     enum Field {
         case part1, part2, part3
     }
@@ -28,8 +28,8 @@ struct AddRuleView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part1) // 포커스 바인딩
-                            .onChange(of: part1) { newValue in
-                                // ⭐️ 3글자가 채워지면 두 번째 칸으로 커서 자동 이동
+                            .onChange(of: part1) { oldValue, newValue in
+                                // 3글자가 채워지면 두 번째 칸으로 커서 자동 이동
                                 if newValue.count == 3 {
                                     focusedField = .part2
                                 }
@@ -43,7 +43,7 @@ struct AddRuleView: View {
                             .multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part2) // 포커스 바인딩
                             .onChange(of: part2) { oldValue, newValue in
-                                // ⭐️ 4글자가 채워지면 세 번째 칸으로 커서 자동 이동
+                                // 4글자가 채워지면 세 번째 칸으로 커서 자동 이동
                                 if newValue.count == 4 {
                                     focusedField = .part3
                                 }

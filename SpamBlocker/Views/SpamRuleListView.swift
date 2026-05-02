@@ -3,6 +3,7 @@ import SwiftUI
 struct SpamRuleListView: View {
     @State private var rules: [SpamRule] = []
     @State private var showAddSheet = false
+    @State private var ruleToEdit: SpamRule?
     @State private var selectedFilter = "ALL"  // ALL, EXACT, PREFIX
     
     let filters = ["ALL", "EXACT", "PREFIX"]
@@ -45,6 +46,10 @@ struct SpamRuleListView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .contentShape(Rectangle()) // 빈 공간을 눌러도 클릭되게
+                        .onTapGesture {
+                            ruleToEdit = rule // 리스트를 누르면 수정 창 띄우기 트리거
+                        }
                     }
                     .onDelete(perform: deleteRules)
                 }
@@ -59,6 +64,11 @@ struct SpamRuleListView: View {
             }
             .sheet(isPresented: $showAddSheet) {
                 AddRuleView(onSave: {
+                    Task { await loadRules() }
+                })
+            }
+            .sheet(item: $ruleToEdit) { rule in
+                UpdateRuleView(rule: rule, onSave: {
                     Task { await loadRules() }
                 })
             }

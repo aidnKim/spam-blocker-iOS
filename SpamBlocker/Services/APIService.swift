@@ -57,6 +57,21 @@ class APIService {
         let (_, _) = try await URLSession.shared.data(for: request)
     }
     
+    // MARK: - 수정
+    static func updateRule(id: Int, _ rule: SpamRuleRequest) async throws {
+        guard let url = URL(string: "\(baseURL)/spam-rules/\(id)") else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let encoder = JSONEncoder()
+        request.httpBody = try encoder.encode(rule)
+        
+        let (_, _) = try await URLSession.shared.data(for: request)
+    }
+    
     // MARK: - Call Directory 갱신
     static func reloadCallDirectory() {
         // 본인의 Extension Bundle Identifier 입력 (주의: 소문자 등 본인 설정 확인)
