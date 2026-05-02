@@ -1,6 +1,20 @@
 import Foundation
 import CallKit
 
+enum APIError: Error, LocalizedError {
+    case duplicateNumber
+    case serverError(statusCode: Int)
+    
+    var errorDescription: String? {
+        switch self {
+        case .duplicateNumber:
+            return "이미 등록된 번호입니다."
+        case .serverError(let statusCode):
+            return "서버 오류가 발생했습니다. (코드: \(statusCode))"
+        }
+    }
+}
+
 class APIService {
     // 시뮬레이터에서는 localhost를 쓰면 됨
     // 실제 기기 테스트 시에는 Mac의 IP 주소로 변경 (ex: "http://192.168.0.10:8080")
@@ -43,7 +57,17 @@ class APIService {
         let encoder = JSONEncoder()
         request.httpBody = try encoder.encode(rule)
         
-        let (_, _) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
+                
+        if let httpResponse = response as? HTTPURLResponse {
+            // 백엔드 에러 코드에 맞게 수정 (기본 500, 혹은 예외처리 시 409)
+            if httpResponse.statusCode == 500 || httpResponse.statusCode == 409 {
+                throw APIError.duplicateNumber
+            } else if !(200...299).contains(httpResponse.statusCode) {
+                throw APIError.serverError(statusCode: httpResponse.statusCode)
+            }
+        }
+
     }
     
     // MARK: - 삭제
@@ -69,7 +93,17 @@ class APIService {
         let encoder = JSONEncoder()
         request.httpBody = try encoder.encode(rule)
         
-        let (_, _) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
+                
+        if let httpResponse = response as? HTTPURLResponse {
+            // 백엔드 에러 코드에 맞게 수정 (기본 500, 혹은 예외처리 시 409)
+            if httpResponse.statusCode == 500 || httpResponse.statusCode == 409 {
+                throw APIError.duplicateNumber
+            } else if !(200...299).contains(httpResponse.statusCode) {
+                throw APIError.serverError(statusCode: httpResponse.statusCode)
+            }
+        }
+
     }
     
     // MARK: - Call Directory 갱신

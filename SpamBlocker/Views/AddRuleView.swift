@@ -16,6 +16,9 @@ struct AddRuleView: View {
     @State private var isPrefixBlock = true
     @State private var memo = ""
     
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
     var onSave: () -> Void
     
     var body: some View {
@@ -125,14 +128,16 @@ struct AddRuleView: View {
                     Button("취소") { dismiss() }
                 }
             }
-            // (옵션) 화면이 켜지자마자 첫 번째 칸에 키보드를 띄우고 싶다면 아래 주석을 푸세요
-            /*
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     focusedField = .part1
                 }
             }
-            */
+            .alert("알림", isPresented: $showAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(alertMessage)
+            }
         }
     }
     
@@ -150,11 +155,18 @@ struct AddRuleView: View {
         
         Task {
             do {
-                try await APIService.addRule(rule)
+                try await APIService.addRule(rule) // (수정 화면은 updateRule)
                 APIService.reloadCallDirectory()
                 onSave()
                 dismiss()
+            } catch let error as APIError {
+                // 우리가 정의한 에러일 경우
+                alertMessage = error.localizedDescription
+                showAlert = true
             } catch {
+                // 그 외 네트워크 에러 등
+                alertMessage = "요청에 실패했습니다. (\(error.localizedDescription))"
+                showAlert = true
                 print("등록 실패: \(error)")
             }
         }
