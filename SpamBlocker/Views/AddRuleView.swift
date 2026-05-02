@@ -32,8 +32,11 @@ struct AddRuleView: View {
                             .multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part1) // 포커스 바인딩
                             .onChange(of: part1) { oldValue, newValue in
+                                if newValue.count > 3 {
+                                    part1 = String(newValue.prefix(3))
+                                }
                                 // 3글자가 채워지면 두 번째 칸으로 커서 자동 이동
-                                if newValue.count == 3 {
+                                if part1.count == 3 {
                                     focusedField = .part2
                                 }
                             }
@@ -46,8 +49,11 @@ struct AddRuleView: View {
                             .multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part2) // 포커스 바인딩
                             .onChange(of: part2) { oldValue, newValue in
+                                if newValue.count > 4 {
+                                    part2 = String(newValue.prefix(4))
+                                }
                                 // 4글자가 채워지면 세 번째 칸으로 커서 자동 이동
-                                if newValue.count == 4 {
+                                if part2.count == 4 {
                                     focusedField = .part3
                                 }
                             }
@@ -60,13 +66,15 @@ struct AddRuleView: View {
                             .multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part3) // 포커스 바인딩
                             .onChange(of: part3) { oldValue, newValue in
-                                // 커서만 넘어온 상태에서는 newValue가 비어있으므로 토글이 안 꺼집니다.
-                                // 사용자가 '진짜로 숫자를 타이핑했을 때만' 토글이 꺼집니다.
-                                if newValue.isEmpty {
-                                    isPrefixBlock = true
-                                } else {
-                                    isPrefixBlock = false
-                                }
+                                // 입력값이 4자리를 초과하면, 딱 4자리까지만 남기고 잘라냅니다.
+                               if newValue.count > 4 {
+                                   part3 = String(newValue.prefix(4))
+                               }
+                               
+                               // 방금 입력한 값(또는 잘라낸 결과)이 4자리라면 모드 전환
+                               if part3.count == 4 {
+                                   isPrefixBlock = false
+                               }
                             }
                     }
                     
@@ -86,8 +94,8 @@ struct AddRuleView: View {
                                     .font(.caption)
                                     .foregroundColor(.red)
                             }
-                            if !part3.isEmpty && part3.count < 4 {
-                                Text("• 모든번호 차단 스위치를 켜거나 4자리 모두 입력해주세요")
+                            if !isPrefixBlock && part3.count < 4 {
+                                Text("• 정확한 번호 차단을 위해 4자리를 모두 입력하거나, 시작 번호 차단 스위치를 켜주세요")
                                     .font(.caption)
                                     .foregroundColor(.red)
                             }
@@ -99,8 +107,10 @@ struct AddRuleView: View {
                         .tint(.red)
                         .onChange(of: isPrefixBlock) { oldValue, newValue in
                             if newValue {
-                                part3 = ""
-                                // 토글을 다시 켰을 때 커서를 두 번째 칸으로 돌려보내기
+                                // 4자리가 꽉 차있는데 토글을 켰다면 마지막 자리를 하나 지워줌
+                                if part3.count == 4 {
+                                    part3.removeLast()
+                                }
                                 focusedField = .part2
                             }
                         }
@@ -144,7 +154,14 @@ struct AddRuleView: View {
     // 유효성 검사 및 저장 로직은 이전과 동일
     func isValid() -> Bool {
         if part1.count < 2 || part2.count < 3 { return false }
-        if part3.count > 0 && part3.count < 4 { return false }
+        
+        if isPrefixBlock {
+            // PREFIX 차단일 때는 part3가 비어있거나 1~3자리여야 함
+            if part3.count >= 4 { return false }
+        } else {
+            // EXACT 차단일 때는 part3가 정확히 4자리여야 함
+            if part3.count != 4 { return false }
+        }
         return true
     }
     

@@ -35,8 +35,23 @@ class CallDirectoryHandler: CXCallDirectoryProvider {
                     
                     // PREFIX 인 경우 뒤에 4자리(0000~9999)를 붙여서 1만 개 번호 생성
                     if rule.matchType == "PREFIX" {
-                        let expandedBase = baseIntNumber * 10000 // 예: 82701234 -> 827012340000
-                        for i in 0..<10000 {
+                        // 하이픈(-) 기준으로 분리하여 3번째 파트(마지막 번호 부분)의 길이를 확인
+                        let components = rule.phoneNumber.components(separatedBy: "-")
+                        var missingDigits = 4 // 기본적으로 4자리가 빠졌다고 가정
+                        
+                        // 마지막 칸(part3)이 일부라도 입력되어 있는 경우 (예: "010-1234-56" -> 2자리 입력됨)
+                        if components.count == 3 {
+                            missingDigits = 4 - components[2].count
+                        }
+                        
+                        // 빠진 자릿수만큼 10을 곱해서 배수 계산 (2자리 누락이면 100)
+                        var multiplier = 1
+                        for _ in 0..<missingDigits {
+                            multiplier *= 10
+                        }
+                        
+                        let expandedBase = baseIntNumber * Int64(multiplier)
+                        for i in 0..<multiplier {
                             phoneNumbersToBlock.append(expandedBase + Int64(i))
                         }
                     } else {

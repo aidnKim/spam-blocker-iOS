@@ -41,7 +41,10 @@ struct UpdateRuleView: View {
                             .keyboardType(.numberPad).multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part1)
                             .onChange(of: part1) { oldValue, newValue in
-                                if newValue.count == 3 {
+                                if newValue.count > 3 {
+                                    part1 = String(newValue.prefix(3))
+                                }
+                                if part1.count == 3 {
                                     focusedField = .part2
                                 }
                             }
@@ -50,7 +53,10 @@ struct UpdateRuleView: View {
                             .keyboardType(.numberPad).multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part2)
                             .onChange(of: part2) { oldValue, newValue in
-                                if newValue.count == 4 {
+                                if newValue.count > 4 {
+                                    part2 = String(newValue.prefix(4))
+                                }
+                                if part2.count == 4 {
                                     focusedField = .part3
                                 }
                             }
@@ -59,19 +65,23 @@ struct UpdateRuleView: View {
                             .keyboardType(.numberPad).multilineTextAlignment(.center)
                             .focused($focusedField, equals: .part3)
                             .onChange(of: part3) { oldValue, newValue in
-                                if newValue.isEmpty {
-                                    isPrefixBlock = true
-                                } else {
+                                // 입력값이 4자리를 초과하면, 딱 4자리까지만 남기고 잘라냅니다.
+                                if newValue.count > 4 {
+                                    part3 = String(newValue.prefix(4))
+                                }
+                                
+                                // 방금 입력한 값(또는 잘라낸 결과)이 4자리라면 모드 전환
+                                if part3.count == 4 {
                                     isPrefixBlock = false
                                 }
                             }
                     }
                     
-                    if (!part1.isEmpty && part1.count < 2) || (!part2.isEmpty && part2.count < 3) || (!part3.isEmpty && part3.count < 4) {
+                    if (!part1.isEmpty && part1.count < 2) || (!part2.isEmpty && part2.count < 3) || (!isPrefixBlock && part3.count < 4) {
                         VStack(alignment: .leading, spacing: 5) {
                             if !part1.isEmpty && part1.count < 2 { Text("• 최소 2자리 이상 입력하세요").font(.caption).foregroundColor(.red) }
                             if !part2.isEmpty && part2.count < 3 { Text("• 최소 3자리 이상 입력하세요").font(.caption).foregroundColor(.red) }
-                            if !part3.isEmpty && part3.count < 4 { Text("• 4자리 모두 입력해주세요").font(.caption).foregroundColor(.red) }
+                            if !isPrefixBlock && part3.count < 4 { Text("• 정확한 번호 차단을 위해 4자리를 모두 입력하거나 스위치를 켜주세요").font(.caption).foregroundColor(.red) }
                         }
                     }
                     
@@ -79,7 +89,9 @@ struct UpdateRuleView: View {
                         .tint(.red)
                         .onChange(of: isPrefixBlock) { oldValue, newValue in
                             if newValue == true {
-                                part3 = ""
+                                if part3.count == 4 {
+                                    part3.removeLast()
+                                }
                             }
                         }
                 }
@@ -90,7 +102,7 @@ struct UpdateRuleView: View {
                     Button(action: saveUpdatedRule) {
                         HStack { Spacer(); Text("수정 완료").fontWeight(.bold); Spacer() }
                     }
-                    .disabled(part1.count < 2 || part2.count < 3 || (part3.count > 0 && part3.count < 4))
+                    .disabled(part1.count < 2 || part2.count < 3 || (!isPrefixBlock && part3.count < 4) || (isPrefixBlock && part3.count >= 4))
                 }
             }
             .navigationTitle("규칙 수정")
